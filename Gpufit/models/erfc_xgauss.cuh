@@ -33,7 +33,7 @@ __device__ void calculate_erfc_xgauss(REAL const* parameters,
   float v1 = v0 / parameters[2];
   float ev=expf(-k3-0.5f*k0*k0)/parameters[1]/parameters[2]/sqrtf(2.f*3.14159f);
 
-  value[point_index] = parameters[3]*v0+parameters[4];;
+  value[point_index] = parameters[3]*v0+parameters[4];
   REAL* current_derivatives = derivative + point_index;
   current_derivatives[0*n_points] = parameters[3]*(-v1*k2+(k0-k2)*ev);
   current_derivatives[1*n_points] = parameters[3]*(-v1+ev);

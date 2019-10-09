@@ -85,6 +85,12 @@ private:
     void calc_values_gauss1d(std::vector<REAL>& gaussian);
     void calc_derivatives_gauss1d(std::vector<REAL> & derivatives);
 
+    void calc_values_exp1d(std::vector<REAL>& exponential);
+    void calc_derivatives_exp1d(std::vector<REAL>& derivatives);
+
+    void calc_values_erfc_xgauss(std::vector<REAL>& xgauss);
+    void calc_derivatives_erfc_xgauss(std::vector<REAL>& derivatives);
+
     void calc_values_cauchy2delliptic(std::vector<REAL>& cauchy);
     void calc_derivatives_cauchy2delliptic(std::vector<REAL> & derivatives);
 

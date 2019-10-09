@@ -263,6 +263,54 @@ void LMFitCPP::calc_derivatives_gauss1d(
     }
 }
 
+void LMFitCPP::calc_derivatives_exp1d(std::vector<REAL>& derivatives){
+  REAL * user_info_float = (REAL*)user_info_;
+  REAL x = 0.;
+  for (std::size_t point_index = 0; point_index < info_.n_points_; point_index++){
+    if (!user_info_float)
+      x = REAL(point_index);
+    else if (info_.user_info_size_ / sizeof(REAL) == info_.n_points_)
+      x = user_info_float[point_index];
+    else if (info_.user_info_size_ / sizeof(REAL) > info_.n_points_){
+      std::size_t const fit_begin = fit_index_ * info_.n_points_;
+      x = user_info_float[fit_begin + point_index];
+    }
+    REAL ev = exp(-x*parameters_[2]);
+    derivatives[0*info_.n_points_+point_index] = 1;
+    derivatives[1*info_.n_points_+point_index] = ev;
+    derivatives[2*info_.n_points_+point_index] = -x*ev;
+  }
+}
+
+void LMFitCPP::calc_derivatives_erfc_xgauss(std::vector<REAL>& derivatives){
+  REAL * user_info_float = (REAL*)user_info_;
+  REAL x = 0.;
+  REAL k2 = parameters_[1] / parameters_[2];
+  REAL k3 = k2 * k2;
+  for (std::size_t point_index = 0; point_index < info_.n_points_; point_index++){
+    if (!user_info_float)
+      x = REAL(point_index);
+    else if (info_.user_info_size_ / sizeof(REAL) == info_.n_points_)
+      x = user_info_float[point_index];
+    else if (info_.user_info_size_ / sizeof(REAL) > info_.n_points_){
+      std::size_t const fit_begin = fit_index_ * info_.n_points_;
+      x = user_info_float[fit_begin + point_index];
+    }
+    REAL k0 = (x-parameters_[0]) / parameters_[1];
+    REAL k1 = (x-parameters_[0]) / parameters_[2];
+    REAL v0 = 0.5f / abs(parameters_[2]);
+    v0 *= expf(k1-0.5f*k3);
+    v0 *= erfcf(parameters_[2]/abs(parameters_[2])/sqrtf(2.f)*(k0+k2));
+    REAL v1 = v0 / parameters_[2];
+    REAL ev=expf(-k3-0.5f*k0*k0)/parameters_[1]/parameters_[2]/sqrtf(2.f*3.14159f);
+    derivatives[0*info_.n_points_+point_index] = parameters_[3]*(-v1*k2+(k0-k2)*ev);
+    derivatives[1*info_.n_points_+point_index] = parameters_[3]*(-v1+ev);
+    derivatives[2*info_.n_points_+point_index] = parameters_[3]*(v1*(k3-1)+k3*ev);
+    derivatives[3*info_.n_points_+point_index] = v0;
+    derivatives[4*info_.n_points_+point_index] = 1.0f;
+  }
+}
+
 void LMFitCPP::calc_derivatives_cauchy2delliptic(
     std::vector<REAL> & derivatives)
 {
@@ -484,6 +532,46 @@ void LMFitCPP::calc_values_gauss1d(std::vector<REAL>& gaussian)
     }
 }
 
+void LMFitCPP::calc_values_exp1d(std::vector<REAL>& exponential)
+{
+  REAL * user_info_float = (REAL*)user_info_;
+  REAL x = 0.f;
+  for (std::size_t point_index = 0; point_index < info_.n_points_; point_index++){
+    if (!user_info_float)
+      x = REAL(point_index);
+    else if (info_.user_info_size_ / sizeof(REAL) == info_.n_points_)
+      x = user_info_float[point_index];
+    else if (info_.user_info_size_ / sizeof(REAL) > info_.n_points_){
+      std::size_t const fit_begin = fit_index_ * info_.n_points_;
+      x = user_info_float[fit_begin + point_index];
+    }
+    exponential[point_index] = parameters_[0]+parameters_[1]*exp(-x*parameters_[2]);
+  }
+}
+
+void LMFitCPP::calc_values_erfc_xgauss(std::vector<REAL>& xgauss){
+  REAL * user_info_float = (REAL*)user_info_;
+  REAL x = 0.f;
+  REAL k2 = parameters_[1] / parameters_[2];
+  REAL k3 = k2 * k2;
+  for (std::size_t point_index = 0; point_index < info_.n_points_; point_index++){
+    if (!user_info_float)
+      x = REAL(point_index);
+    else if (info_.user_info_size_ / sizeof(REAL) == info_.n_points_)
+      x = user_info_float[point_index];
+    else if (info_.user_info_size_ / sizeof(REAL) > info_.n_points_){
+      std::size_t const fit_begin = fit_index_ * info_.n_points_;
+      x = user_info_float[fit_begin + point_index];
+    }
+    REAL k0 = (x-parameters_[0]) / parameters_[1];
+    REAL k1 = (x-parameters_[0]) / parameters_[2];    
+    REAL v0 = 0.5f / abs(parameters_[2]);
+    v0 *= expf(k1-0.5f*k3);
+    v0 *= erfcf(parameters_[2]/abs(parameters_[2])/sqrtf(2.f)*(k0+k2));
+    xgauss[point_index] = parameters_[3]*v0+parameters_[4];
+  }
+}
+  
 void LMFitCPP::calc_values_linear1d(std::vector<REAL>& line)
 {
     REAL * user_info_float = (REAL*)user_info_;
@@ -577,6 +665,16 @@ void LMFitCPP::calc_curve_values(std::vector<REAL>& curve, std::vector<REAL>& de
     {
         calc_values_linear1d(curve);
         calc_derivatives_linear1d(derivatives);
+    }
+    else if (info_.model_id_ == EXP_1D)
+    {
+      calc_values_exp1d(curve);
+      calc_derivatives_exp1d(derivatives);
+    }
+    else if (info_.model_id_ == ERFC_XGAUSS)
+    {
+      calc_values_erfc_xgauss(curve);
+      calc_derivatives_erfc_xgauss(derivatives);
     }
     else if (info_.model_id_ == FLETCHER_POWELL_HELIX)
     {
