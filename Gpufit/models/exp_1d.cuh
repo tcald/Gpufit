@@ -23,13 +23,12 @@ __device__ void calculate_exp1d(REAL const* parameters,
     x = user_info_float[chunk_begin + fit_begin + point_index];
   }
 
-  float ev = exp(-x*parameters[2]);
-  value[point_index] = parameters[0] + parameters[1] * ev;
+  float ev = exp(-x*parameters[1]);
+  value[point_index] = parameters[0] * ev;
 
   REAL* current_derivatives = derivative + point_index;
-  current_derivatives[0 * n_points] = 1;
-  current_derivatives[1 * n_points] = ev;
-  current_derivatives[2 * n_points] = -x*ev;
+  current_derivatives[0 * n_points] = ev;
+  current_derivatives[1 * n_points] = -x*ev;
 }
 
 #endif

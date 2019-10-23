@@ -13,7 +13,8 @@ enum ModelID {
     FLETCHER_POWELL_HELIX = 6,
     BROWN_DENNIS = 7,
     EXP_1D = 8,
-    ERFC_XGAUSS = 9
+    EXP_BASE_1D = 9,
+    ERFC_XGAUSS = 10
 };
 
 // estimator ID

@@ -88,6 +88,9 @@ private:
     void calc_values_exp1d(std::vector<REAL>& exponential);
     void calc_derivatives_exp1d(std::vector<REAL>& derivatives);
 
+    void calc_values_expbase1d(std::vector<REAL>& exponential);
+    void calc_derivatives_expbase1d(std::vector<REAL>& derivatives);
+
     void calc_values_erfc_xgauss(std::vector<REAL>& xgauss);
     void calc_derivatives_erfc_xgauss(std::vector<REAL>& derivatives);
 

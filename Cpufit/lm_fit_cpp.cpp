@@ -275,6 +275,24 @@ void LMFitCPP::calc_derivatives_exp1d(std::vector<REAL>& derivatives){
       std::size_t const fit_begin = fit_index_ * info_.n_points_;
       x = user_info_float[fit_begin + point_index];
     }
+    REAL ev = exp(-x*parameters_[1]);
+    derivatives[0*info_.n_points_+point_index] = ev;
+    derivatives[1*info_.n_points_+point_index] = -x*ev;
+  }
+}
+
+void LMFitCPP::calc_derivatives_expbase1d(std::vector<REAL>& derivatives){
+  REAL * user_info_float = (REAL*)user_info_;
+  REAL x = 0.;
+  for (std::size_t point_index = 0; point_index < info_.n_points_; point_index++){
+    if (!user_info_float)
+      x = REAL(point_index);
+    else if (info_.user_info_size_ / sizeof(REAL) == info_.n_points_)
+      x = user_info_float[point_index];
+    else if (info_.user_info_size_ / sizeof(REAL) > info_.n_points_){
+      std::size_t const fit_begin = fit_index_ * info_.n_points_;
+      x = user_info_float[fit_begin + point_index];
+    }
     REAL ev = exp(-x*parameters_[2]);
     derivatives[0*info_.n_points_+point_index] = 1;
     derivatives[1*info_.n_points_+point_index] = ev;
@@ -533,6 +551,23 @@ void LMFitCPP::calc_values_gauss1d(std::vector<REAL>& gaussian)
 }
 
 void LMFitCPP::calc_values_exp1d(std::vector<REAL>& exponential)
+{
+  REAL * user_info_float = (REAL*)user_info_;
+  REAL x = 0.f;
+  for (std::size_t point_index = 0; point_index < info_.n_points_; point_index++){
+    if (!user_info_float)
+      x = REAL(point_index);
+    else if (info_.user_info_size_ / sizeof(REAL) == info_.n_points_)
+      x = user_info_float[point_index];
+    else if (info_.user_info_size_ / sizeof(REAL) > info_.n_points_){
+      std::size_t const fit_begin = fit_index_ * info_.n_points_;
+      x = user_info_float[fit_begin + point_index];
+    }
+    exponential[point_index] = parameters_[0]*exp(-x*parameters_[1]);
+  }
+}
+
+void LMFitCPP::calc_values_expbase1d(std::vector<REAL>& exponential)
 {
   REAL * user_info_float = (REAL*)user_info_;
   REAL x = 0.f;
